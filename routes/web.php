@@ -20,10 +20,11 @@ use Illuminate\Support\Facades\Route;
 //     return view('welcome');
 // });
 
+Route::get("/", [NoteController::class, "index"])->middleware('auth')->name("home");
 Route::resource('/notes', NoteController::class)->middleware('auth');
-Route::get("/", [NoteController::class, "index"])->middleware('auth');
-Route::get("/register", [RegisterController::class, "create"])->middleware('auth');
-Route::post("/register", [RegisterController::class, "store"])->middleware('auth');
+
+Route::get("/register", [RegisterController::class, "create"])->middleware('guest')->name("register");
+Route::post("/register", [RegisterController::class, "store"])->middleware('guest');
 
 Route::get("login", [LoginController::class, "index"])->name('login')->middleware("guest");
 Route::post("login", [LoginController::class, "authenticate"]);
