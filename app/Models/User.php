@@ -32,4 +32,9 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
     ];
+
+    public function notes()
+    {
+        return $this->hasMany(Note::class, 'owner');
+    }
 }

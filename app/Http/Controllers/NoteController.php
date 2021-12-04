@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Note;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class NoteController extends Controller
 {
@@ -13,7 +15,10 @@ class NoteController extends Controller
      */
     public function index()
     {
-        return view('notes.index', ['siteTitle' => 'Home']);
+        $notes = Auth::user()->notes()->get();
+        $siteTitle = 'Home';
+        dd($notes);
+        return view('notes.index', compact('siteTitle', 'notes'));
     }
 
     /**
@@ -34,7 +39,24 @@ class NoteController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'title' => 'required|max:255',
+            'tags' => 'max:255',
+            'body' => 'required|max:255',
+            // file only jpeg, png, jpg and size less than 5MB
+            'media' => 'file|mimes:jpeg,png,jpg|max:5000',
+        ]);
+
+        Note::create([
+            'title' => $validatedData['title'],
+            'tags' => $validatedData['tags'],
+            'body' => $validatedData['body'],
+            'owner' => Auth::user()->id,
+            // TODO: implementasi upload file
+            'media' => 'https://picsum.photos/300/200',
+        ]);
+
+        return redirect('/notes')->with('success', 'Note created successfully.');
     }
 
     /**
@@ -45,7 +67,12 @@ class NoteController extends Controller
      */
     public function show($id)
     {
-        return view('notes.show');
+        $note = Note::find($id);
+        if ($note->owner !== Auth::user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
+        $siteTitle = $note->title;
+        return view('notes.show', compact('siteTitle', 'note'));
     }
 
     /**
@@ -54,9 +81,10 @@ class NoteController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit()
+    public function edit($id)
     {
-        return view('notes.edit');
+        $note = Note::find($id);
+        return view('notes.edit', compact('note'));
     }
 
     /**
@@ -68,7 +96,23 @@ class NoteController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'title' => 'required|max:255',
+            'tags' => 'max:255',
+            'body' => 'required',
+        ]);
+
+        $note = Note::find($id);
+        if ($note->owner !== Auth::user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $note->title = $request->title;
+        $note->tags = $request->tags;
+        $note->body = $request->body;
+        $note->save();
+
+        return redirect("/notes/{$id}")->with('success', 'Note updated successfully.');
     }
 
     /**
@@ -79,6 +123,14 @@ class NoteController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $note = Note::find($id);
+
+        if ($note->owner !== Auth::user()->id) {
+            abort(403);
+        }
+
+        $note->delete();
+
+        return redirect('/notes')->with('success', 'Note deleted successfully.');
     }
 }

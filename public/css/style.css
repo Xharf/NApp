@@ -1,8 +1,6 @@
 
-.text-truncate-container {
-  display: -webkit-box;
-  -webkit-line-clamp: 5;
-  -webkit-box-orient: vertical; 
+.card-max-height {
+  max-height: 200px;
   overflow: hidden;
 }
 

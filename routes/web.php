@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::resource('/notes', NoteController::class)->middleware('auth');
 Route::get("/", [NoteController::class, "index"])->middleware('auth');
-Route::get("/register", [RegisterController::class, "create"])->middleware('guest');
+Route::get("/register", [RegisterController::class, "create"])->middleware('guest')->name("register");
 Route::post("/register", [RegisterController::class, "store"])->middleware('guest');
 
 Route::get("login", [LoginController::class, "index"])->name('login')->middleware("guest");
